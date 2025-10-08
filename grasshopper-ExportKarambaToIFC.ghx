@@ -1,0 +1,188 @@
+diff --git a//dev/null b/grasshopper/ExportKarambaToIFC.ghx
+index 0000000000000000000000000000000000000000..1dda07892814115a37b54ba7f3c52937758cc93a 100644
+--- a//dev/null
++++ b/grasshopper/ExportKarambaToIFC.ghx
+@@ -0,0 +1,183 @@
++<?xml version="1.0" encoding="utf-8"?>
++<GH_Document MajorVersion="1" MinorVersion="0" GrasshopperBuild="1.0.000" RhinoBuild="7.0.000">
++  <Definition Name="Karamba model to IFC" Description="Exporta un modelo de Karamba3D a un archivo IFC simple empleando un componente GhPython.">
++    <Objects>
++      <Object Assembly="GhPython" Name="Export IFC" NickName="ExportIFC" Description="Escribe un IFC a partir del modelo de Karamba3D" InstanceGuid="0c9e4f83-2c0a-4b8c-818b-24e0c5d82c50" Expiration="0">
++        <Attributes>
++          <Pivot>340,160</Pivot>
++          <Enabled>True</Enabled>
++          <Locked>False</Locked>
++          <Hide>False</Hide>
++          <Colour R="60" G="145" B="255" />
++        </Attributes>
++        <Parameters>
++          <Input Index="0" Name="Model" NickName="M" Description="Modelo ensamblado de Karamba3D" Access="item" Optional="false" Visible="true">
++            <PersistentData />
++          </Input>
++          <Input Index="1" Name="Ruta" NickName="R" Description="Ruta completa del archivo IFC a escribir" Access="item" Optional="false" Visible="true">
++            <PersistentData />
++          </Input>
++          <Input Index="2" Name="Grabar" NickName="G" Description="Pulsa True para generar el IFC" Access="item" Optional="true" Visible="true">
++            <PersistentData />
++          </Input>
++          <Output Index="0" Name="Archivo" NickName="A" Description="Ruta del archivo IFC generado" Access="item" Visible="true" />
++          <Output Index="1" Name="Log" NickName="L" Description="Mensajes de exportación" Access="list" Visible="true" />
++        </Parameters>
++        <UserText>
++import clr
++import System
++import System.IO
++
++log = []
++archivo = None
++
++
++def ensure_directory(path):
++    folder = System.IO.Path.GetDirectoryName(path)
++    if folder and not System.IO.Directory.Exists(folder):
++        System.IO.Directory.CreateDirectory(folder)
++
++
++if G:
++    if M is None:
++        log.append("No se recibió un modelo válido de Karamba3D.")
++    elif not R:
++        log.append("Define una ruta completa para el archivo IFC (por ejemplo C:/proyecto/modelo.ifc).")
++    else:
++        try:
++            clr.AddReference('KarambaCommon')
++            import Karamba
++            import Karamba.Elements as ke
++        except Exception as ex:
++            log.append("No fue posible cargar las librerías de Karamba3D: {0}".format(str(ex)))
++        else:
++            ruta = str(R)
++            if not ruta.strip():
++                log.append("La ruta del archivo IFC no puede estar vacía.")
++            else:
++                if not ruta.lower().endswith('.ifc'):
++                    ruta = ruta + '.ifc'
++                    log.append('No se detectó la extensión .ifc, se añadió automáticamente.')
++                try:
++                    ensure_directory(ruta)
++                    writer = System.IO.StreamWriter(ruta, False, System.Text.Encoding.UTF8)
++                    try:
++                        writer.WriteLine("ISO-10303-21;")
++                        writer.WriteLine("HEADER;")
++                        writer.WriteLine("FILE_DESCRIPTION(('IFC4'),'2;1');")
++                        writer.WriteLine("FILE_NAME('Karamba3D_export','{0}',('Grasshopper'),('Grasshopper'),'','ExportKarambaToIFC', '');".format(System.DateTime.Now.ToString('yyyy-MM-dd')))
++                        writer.WriteLine("FILE_SCHEMA(('IFC4'));")
++                        writer.WriteLine("ENDSEC;")
++                        writer.WriteLine("DATA;")
++
++                        next_id = [1]
++
++                        def next_eid():
++                            eid = next_id[0]
++                            next_id[0] += 1
++                            return eid
++
++                        origin_id = next_eid()
++                        writer.WriteLine("#{0}=IFCCARTESIANPOINT((0.,0.,0.));".format(origin_id))
++                        wcs_id = next_eid()
++                        writer.WriteLine("#{0}=IFCAXIS2PLACEMENT3D(#{1},$,$);".format(wcs_id, origin_id))
++
++                        project_id = next_eid()
++                        site_id = next_eid()
++                        building_id = next_eid()
++                        context_id = next_eid()
++                        site_placement_id = next_eid()
++                        building_placement_id = next_eid()
++
++                        writer.WriteLine("#{0}=IFCPROJECT('0',$,'Karamba Export',$,$,$,$,(#{1}));".format(project_id, context_id))
++                        writer.WriteLine("#{0}=IFCGEOMETRICREPRESENTATIONCONTEXT('Model','Model',3,1.0,#{1},$);".format(context_id, wcs_id))
++                        writer.WriteLine("#{0}=IFCLOCALPLACEMENT($,#{1});".format(site_placement_id, wcs_id))
++                        writer.WriteLine("#{0}=IFCSITE('0',$,'Site',$,$,#{1},$,$,$,$);".format(site_id, site_placement_id))
++                        writer.WriteLine("#{0}=IFCLOCALPLACEMENT(#{1},#{2});".format(building_placement_id, site_placement_id, wcs_id))
++                        writer.WriteLine("#{0}=IFCBUILDING('0',$,'Building',$,$,#{1},$,$,$);".format(building_id, building_placement_id))
++                        writer.WriteLine("#{0}=IFCRELAGGREGATES('0',$,$,$,#{1},(#{2}));".format(next_eid(), project_id, site_id))
++                        writer.WriteLine("#{0}=IFCRELAGGREGATES('0',$,$,$,#{1},(#{2}));".format(next_eid(), site_id, building_id))
++
++                        member_ids = []
++
++                        try:
++                            elems = list(M.elems)
++                        except Exception as ex:
++                            elems = []
++                            log.append("No fue posible leer los elementos del modelo: {0}".format(str(ex)))
++
++                        for elem in elems:
++                            es_viga = False
++                            try:
++                                es_viga = isinstance(elem, ke.ModelBeam)
++                            except Exception:
++                                es_viga = False
++
++                            if (not es_viga) and hasattr(elem, 'curve'):
++                                es_viga = True
++
++                            if not es_viga:
++                                continue
++
++                            try:
++                                curve = elem.curve
++                                try:
++                                    start = curve.PointAtStart
++                                    end = curve.PointAtEnd
++                                except Exception:
++                                    start = curve.PointAt(0.0)
++                                    end = curve.PointAt(1.0)
++                            except Exception as ex:
++                                log.append("No fue posible obtener la geometría de una viga: {0}".format(str(ex)))
++                                continue
++
++                            start_id = next_eid()
++                            end_id = next_eid()
++                            line_id = next_eid()
++                            shape_rep_id = next_eid()
++                            product_shape_id = next_eid()
++                            product_id = next_eid()
++                            rel_id = next_eid()
++
++                            writer.WriteLine("#{0}=IFCCARTESIANPOINT(({1},{2},{3}));".format(start_id, start.X, start.Y, start.Z))
++                            writer.WriteLine("#{0}=IFCCARTESIANPOINT(({1},{2},{3}));".format(end_id, end.X, end.Y, end.Z))
++                            writer.WriteLine("#{0}=IFCPOLYLINE((#{1},#{2}));".format(line_id, start_id, end_id))
++                            writer.WriteLine("#{0}=IFCSHAPEREPRESENTATION(#{1},'Body','Curve3D',(#{2}));".format(shape_rep_id, context_id, line_id))
++                            writer.WriteLine("#{0}=IFCPRODUCTDEFINITIONSHAPE($,$,(#{1}));".format(product_shape_id, shape_rep_id))
++                            writer.WriteLine("#{0}=IFCBEAM('0',$,'KarambaBeam',$,$,#{1},#{2},$,$);".format(product_id, building_placement_id, product_shape_id))
++                            writer.WriteLine("#{0}=IFCRELCONTAINEDINSPATIALSTRUCTURE('0',$,$,$,(#{1}),#{2});".format(rel_id, product_id, building_id))
++                            member_ids.append(product_id)
++
++                        writer.WriteLine("ENDSEC;")
++                        writer.WriteLine("END-ISO-10303-21;")
++                    finally:
++                        writer.Close()
++
++                    archivo = ruta
++                    if member_ids:
++                        log.append("Se exportaron {0} elementos de tipo viga.".format(len(member_ids)))
++                    else:
++                        log.append("No se detectaron vigas en el modelo. Se generó un IFC con la jerarquía base.")
++                except Exception as ex:
++                    log.append("Error generando el IFC: {0}".format(str(ex)))
++else:
++    log.append("Activa el parámetro G (Grabar) para crear el archivo IFC.")
++
++A = archivo
++L = log
++        </UserText>
++      </Object>
++      <Object Assembly="Karamba3D" Name="Model" NickName="Model" Description="Conecta aquí la salida del componente Assemble" InstanceGuid="74d71e4b-5e65-4e56-8fb6-78376fb71d2f" Expiration="0">
++        <Attributes>
++          <Pivot>140,160</Pivot>
++          <Enabled>True</Enabled>
++          <Locked>False</Locked>
++          <Hide>False</Hide>
++        </Attributes>
++      </Object>
++    </Objects>
++    <Connections>
++      <Wire Source="74d71e4b-5e65-4e56-8fb6-78376fb71d2f" SourceParameter="0" Target="0c9e4f83-2c0a-4b8c-818b-24e0c5d82c50" TargetParameter="0" />
++    </Connections>
++  </Definition>
++</GH_Document>
