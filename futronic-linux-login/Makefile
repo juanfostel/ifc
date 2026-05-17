@@ -21,7 +21,7 @@ $(TARGET): src/futronic_auth.c src/ftrapi_compat.h | $(BUILD_DIR)
 
 install: all
 	install -d -m 0755 "$(DESTDIR)$(PREFIX)/bin" "$(DESTDIR)$(PREFIX)/lib" "$(DESTDIR)/usr/local/bin"
-	install -m 0755 "$(TARGET)" "$(DESTDIR)$(PREFIX)/bin/futronic-auth"
+	install -o root -g root -m 4755 "$(TARGET)" "$(DESTDIR)$(PREFIX)/bin/futronic-auth"
 	install -m 0644 "$(SDK_DIR)/ftrapi.so" "$(DESTDIR)$(PREFIX)/lib/ftrapi.so"
 	install -m 0644 "$(SDK_DIR)/libScanAPI.so" "$(DESTDIR)$(PREFIX)/lib/libScanAPI.so"
 	ln -sfn "$(PREFIX)/bin/futronic-auth" "$(DESTDIR)/usr/local/bin/futronic-auth"
