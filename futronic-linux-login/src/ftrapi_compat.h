@@ -88,7 +88,8 @@ FTRAPI_RESULT FTRInitialize(void);
 void FTRTerminate(void);
 FTRAPI_RESULT FTRSetParam(FTR_DWORD param, uintptr_t value);
 FTRAPI_RESULT FTRGetParam(FTR_DWORD param, void *value);
-FTRAPI_RESULT FTREnroll(FTR_USER_CTX context, FTR_DWORD purpose, FTR_DATA *template_data, FTR_ENROLL_DATA *enroll_data);
+FTRAPI_RESULT FTREnroll(FTR_USER_CTX context, FTR_DWORD purpose, FTR_DATA *template_data);
+FTRAPI_RESULT FTREnrollX(FTR_USER_CTX context, FTR_DWORD purpose, FTR_DATA *template_data, FTR_ENROLL_DATA *enroll_data);
 FTRAPI_RESULT FTRVerify(FTR_USER_CTX context, FTR_DATA *template_data, FTR_BOOL *result, FTR_DWORD *far_verify);
 
 #endif
