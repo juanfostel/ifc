@@ -62,10 +62,16 @@ install_binary() {
 patch_pam_file() {
   local name="$1"
   local path="/etc/pam.d/$name"
+  local vendor_path="/usr/lib/pam.d/$name"
 
   if [[ ! -f "$path" ]]; then
-    echo "Saltando $path: no existe." >&2
-    return
+    if [[ -f "$vendor_path" ]]; then
+      install -m 0644 "$vendor_path" "$path"
+      echo "Creado $path desde $vendor_path"
+    else
+      echo "Saltando $path: no existe." >&2
+      return
+    fi
   fi
 
   if grep -qF "$MARKER_BEGIN" "$path"; then
