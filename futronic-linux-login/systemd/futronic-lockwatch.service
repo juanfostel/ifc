@@ -1,0 +1,12 @@
+[Unit]
+Description=Futronic FS81 automatic KDE lockscreen unlock
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/opt/futronic-fs81/bin/futronic-lockwatch
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=default.target
