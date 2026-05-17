@@ -16,7 +16,7 @@ $(BUILD_DIR):
 
 $(TARGET): src/futronic_auth.c src/ftrapi_compat.h | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -Isrc -o $@ src/futronic_auth.c \
-		-L$(SDK_DIR) -Wl,-rpath,'$$ORIGIN/../lib' -Wl,-rpath-link,$(SDK_DIR) \
+		-L$(SDK_DIR) -Wl,-rpath,$(PREFIX)/lib -Wl,-rpath-link,$(SDK_DIR) \
 		-l:ftrapi.so -l:libScanAPI.so $(LDFLAGS)
 
 install: all
