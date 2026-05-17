@@ -20,14 +20,19 @@ $(TARGET): src/futronic_auth.c src/ftrapi_compat.h | $(BUILD_DIR)
 		-l:ftrapi.so -l:libScanAPI.so $(LDFLAGS)
 
 install: all
-	install -d -m 0755 "$(DESTDIR)$(PREFIX)/bin" "$(DESTDIR)$(PREFIX)/lib" "$(DESTDIR)/usr/local/bin"
+	install -d -m 0755 "$(DESTDIR)$(PREFIX)/bin" "$(DESTDIR)$(PREFIX)/lib" "$(DESTDIR)/usr/local/bin" "$(DESTDIR)/usr/lib/systemd/user"
 	install -o root -g root -m 4755 "$(TARGET)" "$(DESTDIR)$(PREFIX)/bin/futronic-auth"
+	install -m 0755 "scripts/futronic-lockwatch.sh" "$(DESTDIR)$(PREFIX)/bin/futronic-lockwatch"
+	install -m 0644 "systemd/futronic-lockwatch.service" "$(DESTDIR)/usr/lib/systemd/user/futronic-lockwatch.service"
 	install -m 0644 "$(SDK_DIR)/ftrapi.so" "$(DESTDIR)$(PREFIX)/lib/ftrapi.so"
 	install -m 0644 "$(SDK_DIR)/libScanAPI.so" "$(DESTDIR)$(PREFIX)/lib/libScanAPI.so"
 	ln -sfn "$(PREFIX)/bin/futronic-auth" "$(DESTDIR)/usr/local/bin/futronic-auth"
+	ln -sfn "$(PREFIX)/bin/futronic-lockwatch" "$(DESTDIR)/usr/local/bin/futronic-lockwatch"
 
 uninstall:
 	rm -f "$(DESTDIR)/usr/local/bin/futronic-auth"
+	rm -f "$(DESTDIR)/usr/local/bin/futronic-lockwatch"
+	rm -f "$(DESTDIR)/usr/lib/systemd/user/futronic-lockwatch.service"
 	rm -rf "$(DESTDIR)$(PREFIX)"
 
 clean:
