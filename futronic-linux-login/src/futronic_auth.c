@@ -262,7 +262,8 @@ static int enroll_user(const char *user) {
     }
 
     fprintf(stderr, "Enrolando huella para %s. Siga las indicaciones del lector.\n", user);
-    FTRAPI_RESULT rc = FTREnroll(NULL, FTR_PURPOSE_ENROLL, &tpl);
+    FTR_ENROLL_DATA enroll_data = {.dwSize = sizeof(enroll_data), .dwQuality = 0};
+    FTRAPI_RESULT rc = FTREnroll(NULL, FTR_PURPOSE_ENROLL, &tpl, &enroll_data);
     if (rc != FTR_RETCODE_OK) {
         fprintf(stderr, "FTREnroll fallo: %s (%d)\n", retcode_name(rc), rc);
         free(tpl.pData);
