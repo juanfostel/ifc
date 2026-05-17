@@ -92,3 +92,4 @@ auth sufficient pam_exec.so quiet /usr/local/bin/futronic-auth verify --pam-user
 - La huella no reemplaza totalmente una politica de seguridad: deja password como respaldo.
 - Proteja `/var/lib/futronic-fs81`; contiene plantillas biometricas, no imagenes crudas, pero siguen siendo datos sensibles.
 - Pruebe primero en `login` o en otra TTY antes de cerrar la sesion grafica.
+- El binario se instala setuid root para que KDE lockscreen pueda leer plantillas y abrir el lector desde PAM. Por eso `enroll` queda bloqueado salvo para root, y `verify` solo permite verificar al usuario real que lo ejecuta.
