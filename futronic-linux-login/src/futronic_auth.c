@@ -52,10 +52,9 @@ static const char *retcode_name(FTRAPI_RESULT code) {
 static void control_callback(FTR_USER_CTX context, FTR_STATE state_mask, FTR_RESPONSE *response,
                              FTR_SIGNAL signal, FTR_BITMAP *bitmap) {
     (void)context;
-    (void)state_mask;
     (void)bitmap;
 
-    if (response) {
+    if ((state_mask & FTR_STATE_SIGNAL_PROVIDED) && response) {
         *response = FTR_CONTINUE;
     }
 
@@ -263,7 +262,7 @@ static int enroll_user(const char *user) {
 
     fprintf(stderr, "Enrolando huella para %s. Siga las indicaciones del lector.\n", user);
     FTR_ENROLL_DATA enroll_data = {.dwSize = sizeof(enroll_data), .dwQuality = 0};
-    FTRAPI_RESULT rc = FTREnroll(NULL, FTR_PURPOSE_ENROLL, &tpl, &enroll_data);
+    FTRAPI_RESULT rc = FTREnrollX(NULL, FTR_PURPOSE_ENROLL, &tpl, &enroll_data);
     if (rc != FTR_RETCODE_OK) {
         fprintf(stderr, "FTREnroll fallo: %s (%d)\n", retcode_name(rc), rc);
         free(tpl.pData);
