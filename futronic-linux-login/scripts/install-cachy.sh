@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PAM_FILES=("sddm" "login")
+PAM_FILES=("sddm" "login" "kde")
 PAM_LINE='auth sufficient pam_exec.so quiet /usr/local/bin/futronic-auth verify --pam-user'
 MARKER_BEGIN='# futronic-fs81 begin'
 MARKER_END='# futronic-fs81 end'
@@ -15,6 +15,7 @@ Uso:
 Por defecto instala el binario y agrega la huella como metodo suficiente en:
   /etc/pam.d/sddm
   /etc/pam.d/login
+  /etc/pam.d/kde
 EOF
 }
 
