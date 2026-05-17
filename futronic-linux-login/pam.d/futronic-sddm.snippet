@@ -1,0 +1,3 @@
+# Insertar antes de la primera linea auth requerida/incluida en /etc/pam.d/sddm.
+# El instalador scripts/install-cachy.sh lo hace automaticamente con marcadores.
+auth sufficient pam_exec.so quiet /usr/local/bin/futronic-auth verify --pam-user
