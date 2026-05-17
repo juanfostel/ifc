@@ -28,6 +28,7 @@ Por defecto instala en `/opt/futronic-fs81`, crea el enlace `/usr/local/bin/futr
 
 - `/etc/pam.d/sddm`
 - `/etc/pam.d/login`
+- `/etc/pam.d/kde`
 
 Para instalar sin tocar PAM:
 
