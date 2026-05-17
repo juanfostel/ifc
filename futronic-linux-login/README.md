@@ -61,6 +61,18 @@ La plantilla queda en:
 
 con permisos `0600`.
 
+## Desbloqueo automatico de KDE
+
+Para desbloquear apenas apoye el dedo, habilite el watcher de usuario:
+
+```bash
+systemctl --user daemon-reload
+systemctl --user enable --now futronic-lockwatch.service
+systemctl --user status futronic-lockwatch.service
+```
+
+El watcher observa cuando la sesion queda bloqueada, ejecuta `futronic-auth verify TU_USUARIO` y, si la huella coincide, llama a `loginctl unlock-session`.
+
 ## Como funciona PAM
 
 La linea instalada es:
