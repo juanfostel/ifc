@@ -3,17 +3,23 @@
 
 #include <stdint.h>
 
+#if defined(__GNUC__)
+#define FTR_PACKED __attribute__((packed))
+#else
+#define FTR_PACKED
+#endif
+
 typedef int32_t FTRAPI_RESULT;
 typedef uint32_t FTR_DWORD;
 typedef int32_t FTR_BOOL;
 typedef void *FTR_USER_CTX;
 
-typedef struct FTR_DATA {
+typedef struct FTR_PACKED FTR_DATA {
     FTR_DWORD dwSize;
     void *pData;
 } FTR_DATA;
 
-typedef struct FTR_BITMAP {
+typedef struct FTR_PACKED FTR_BITMAP {
     FTR_DWORD ftrWidth;
     FTR_DWORD ftrHeight;
     FTR_DATA ftrBitmap;
@@ -91,5 +97,7 @@ FTRAPI_RESULT FTRGetParam(FTR_DWORD param, void *value);
 FTRAPI_RESULT FTREnroll(FTR_USER_CTX context, FTR_DWORD purpose, FTR_DATA *template_data);
 FTRAPI_RESULT FTREnrollX(FTR_USER_CTX context, FTR_DWORD purpose, FTR_DATA *template_data, FTR_ENROLL_DATA *enroll_data);
 FTRAPI_RESULT FTRVerify(FTR_USER_CTX context, FTR_DATA *template_data, FTR_BOOL *result, FTR_DWORD *far_verify);
+
+#undef FTR_PACKED
 
 #endif
