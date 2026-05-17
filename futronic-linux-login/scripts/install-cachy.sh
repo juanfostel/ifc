@@ -110,6 +110,10 @@ Siguiente prueba recomendada:
   sudo futronic-auth enroll TU_USUARIO
   sudo futronic-auth verify TU_USUARIO
 
+Para desbloqueo automatico de KDE:
+  systemctl --user daemon-reload
+  systemctl --user enable --now futronic-lockwatch.service
+
 Abra otra TTY o mantenga una sesion root activa antes de probar el login grafico.
 EOF
 }
