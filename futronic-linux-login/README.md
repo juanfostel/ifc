@@ -30,6 +30,8 @@ Por defecto instala en `/opt/futronic-fs81`, crea el enlace `/usr/local/bin/futr
 - `/etc/pam.d/login`
 - `/etc/pam.d/kde`
 
+Si `/etc/pam.d/kde` no existe pero `/usr/lib/pam.d/kde` si, el instalador crea una copia local antes de agregar la regla. Esto es habitual en sistemas Arch/Cachy donde algunos archivos PAM vienen como configuracion vendor.
+
 Para instalar sin tocar PAM:
 
 ```bash
