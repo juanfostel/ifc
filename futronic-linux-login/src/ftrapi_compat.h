@@ -19,6 +19,11 @@ typedef struct FTR_BITMAP {
     FTR_DATA ftrBitmap;
 } FTR_BITMAP;
 
+typedef struct FTR_ENROLL_DATA {
+    FTR_DWORD dwSize;
+    FTR_DWORD dwQuality;
+} FTR_ENROLL_DATA;
+
 typedef uint32_t FTR_STATE;
 typedef uint32_t FTR_SIGNAL;
 typedef uint32_t FTR_RESPONSE;
@@ -83,7 +88,7 @@ FTRAPI_RESULT FTRInitialize(void);
 void FTRTerminate(void);
 FTRAPI_RESULT FTRSetParam(FTR_DWORD param, uintptr_t value);
 FTRAPI_RESULT FTRGetParam(FTR_DWORD param, void *value);
-FTRAPI_RESULT FTREnroll(FTR_USER_CTX context, FTR_DWORD purpose, FTR_DATA *template_data);
+FTRAPI_RESULT FTREnroll(FTR_USER_CTX context, FTR_DWORD purpose, FTR_DATA *template_data, FTR_ENROLL_DATA *enroll_data);
 FTRAPI_RESULT FTRVerify(FTR_USER_CTX context, FTR_DATA *template_data, FTR_BOOL *result, FTR_DWORD *far_verify);
 
 #endif
