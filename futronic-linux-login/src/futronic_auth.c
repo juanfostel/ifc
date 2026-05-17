@@ -101,6 +101,20 @@ static int validate_user(const char *user) {
     return 0;
 }
 
+static int validate_setuid_target(const char *user) {
+    uid_t real_uid = getuid();
+    if (real_uid == 0) {
+        return 0;
+    }
+
+    struct passwd *pw = getpwuid(real_uid);
+    if (!pw || strcmp(pw->pw_name, user) != 0) {
+        fprintf(stderr, "Usuario PAM no coincide con el usuario real.\n");
+        return -1;
+    }
+    return 0;
+}
+
 static int template_path(const char *user, char *buf, size_t size) {
     int written = snprintf(buf, size, "%s/%s.tpl", TEMPLATE_DIR, user);
     if (written < 0 || (size_t)written >= size) {
@@ -244,6 +258,11 @@ static int read_template_file(const char *path, FTR_DATA *tpl) {
 }
 
 static int enroll_user(const char *user) {
+    if (getuid() != 0) {
+        fprintf(stderr, "El enrolamiento debe ejecutarse como root.\n");
+        return 1;
+    }
+
     if (validate_user(user) == -1 || mkdir_private(TEMPLATE_DIR) == -1 || sdk_init() == -1) {
         return 1;
     }
@@ -284,7 +303,7 @@ static int enroll_user(const char *user) {
 }
 
 static int verify_user(const char *user) {
-    if (validate_user(user) == -1 || sdk_init() == -1) {
+    if (validate_user(user) == -1 || validate_setuid_target(user) == -1 || sdk_init() == -1) {
         return 1;
     }
 
