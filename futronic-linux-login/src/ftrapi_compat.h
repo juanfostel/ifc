@@ -1,0 +1,89 @@
+#ifndef FTRAPI_COMPAT_H
+#define FTRAPI_COMPAT_H
+
+#include <stdint.h>
+
+typedef int32_t FTRAPI_RESULT;
+typedef uint32_t FTR_DWORD;
+typedef int32_t FTR_BOOL;
+typedef void *FTR_USER_CTX;
+
+typedef struct FTR_DATA {
+    FTR_DWORD dwSize;
+    void *pData;
+} FTR_DATA;
+
+typedef struct FTR_BITMAP {
+    FTR_DWORD ftrWidth;
+    FTR_DWORD ftrHeight;
+    FTR_DATA ftrBitmap;
+} FTR_BITMAP;
+
+typedef uint32_t FTR_STATE;
+typedef uint32_t FTR_SIGNAL;
+typedef uint32_t FTR_RESPONSE;
+
+typedef void (*FTR_CB_STATE_CONTROL)(
+    FTR_USER_CTX context,
+    FTR_STATE state_mask,
+    FTR_RESPONSE *response,
+    FTR_SIGNAL signal,
+    FTR_BITMAP *bitmap
+);
+
+enum {
+    FTR_RETCODE_OK = 0,
+    FTR_RETCODE_NO_MEMORY = 2,
+    FTR_RETCODE_INVALID_ARG = 3,
+    FTR_RETCODE_ALREADY_IN_USE = 4,
+    FTR_RETCODE_INVALID_PURPOSE = 5,
+    FTR_RETCODE_INTERNAL_ERROR = 6,
+    FTR_RETCODE_UNABLE_TO_CAPTURE = 7,
+    FTR_RETCODE_CANCELED_BY_USER = 8,
+    FTR_RETCODE_NO_MORE_RETRIES = 9,
+    FTR_RETCODE_FRAME_SOURCE_NOT_SET = 201,
+    FTR_RETCODE_DEVICE_NOT_CONNECTED = 202,
+    FTR_RETCODE_DEVICE_FAILURE = 203,
+    FTR_RETCODE_EMPTY_FRAME = 204,
+    FTR_RETCODE_FAKE_SOURCE = 205
+};
+
+enum {
+    FTR_PARAM_IMAGE_WIDTH = 1,
+    FTR_PARAM_IMAGE_HEIGHT = 2,
+    FTR_PARAM_IMAGE_SIZE = 3,
+    FTR_PARAM_CB_FRAME_SOURCE = 4,
+    FTR_PARAM_CB_CONTROL = 5,
+    FTR_PARAM_MAX_TEMPLATE_SIZE = 6,
+    FTR_PARAM_MAX_FAR_REQUESTED = 7,
+    FTR_PARAM_MAX_FARN_REQUESTED = 8,
+    FTR_PARAM_SYS_ERROR_CODE = 9,
+    FTR_PARAM_MAX_MODELS = 10,
+    FTR_PARAM_FAKE_DETECT = 11,
+    FTR_PARAM_FFD_CONTROL = 12,
+    FTR_PARAM_MIOT_CONTROL = 13,
+    FTR_PARAM_VERSION = 14
+};
+
+enum {
+    FSD_FUTRONIC_USB = 1,
+    FTR_STATE_FRAME_PROVIDED = 1,
+    FTR_STATE_SIGNAL_PROVIDED = 2,
+    FTR_SIGNAL_UNDEFINED = 0,
+    FTR_SIGNAL_TOUCH_SENSOR = 1,
+    FTR_SIGNAL_TAKE_OFF = 2,
+    FTR_SIGNAL_FAKE_SOURCE = 3,
+    FTR_CANCEL = 1,
+    FTR_CONTINUE = 2,
+    FTR_PURPOSE_IDENTIFY = 2,
+    FTR_PURPOSE_ENROLL = 3
+};
+
+FTRAPI_RESULT FTRInitialize(void);
+void FTRTerminate(void);
+FTRAPI_RESULT FTRSetParam(FTR_DWORD param, uintptr_t value);
+FTRAPI_RESULT FTRGetParam(FTR_DWORD param, void *value);
+FTRAPI_RESULT FTREnroll(FTR_USER_CTX context, FTR_DWORD purpose, FTR_DATA *template_data);
+FTRAPI_RESULT FTRVerify(FTR_USER_CTX context, FTR_DATA *template_data, FTR_BOOL *result, FTR_DWORD *far_verify);
+
+#endif
