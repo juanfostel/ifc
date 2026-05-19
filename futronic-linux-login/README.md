@@ -5,16 +5,18 @@ Este proyecto integra el lector Futronic FS81/FS80H con el login de Cachy Linux 
 - `ftrapi.so`: enrolamiento y verificacion de plantillas.
 - `libScanAPI.so`: captura USB del lector.
 - `pam_exec.so`: puente PAM simple para SDDM/login.
+- `pam_kwallet5.so`: apertura automatica de KDE Wallet cuando PAM recibe la contrasena.
 
 La idea es deliberadamente conservadora: primero se prueba `futronic-auth` en terminal y recien despues PAM lo llama durante el inicio de sesion.
 
 ## Requisitos en Cachy
 
 ```bash
-sudo pacman -S --needed base-devel pam libusb-compat
+sudo pacman -S --needed base-devel pam libusb-compat kwallet-pam
 ```
 
 Si tu instalacion no tiene `libusb-compat`, el SDK viejo de Futronic puede fallar al abrir el lector.
+Si no instalas `kwallet-pam`, el login por huella sigue funcionando, pero KDE Wallet no se abrira automaticamente por PAM.
 
 ## Instalar
 
@@ -32,10 +34,23 @@ Por defecto instala en `/opt/futronic-fs81`, crea el enlace `/usr/local/bin/futr
 
 Si `/etc/pam.d/kde` no existe pero `/usr/lib/pam.d/kde` si, el instalador crea una copia local antes de agregar la regla. Esto es habitual en sistemas Arch/Cachy donde algunos archivos PAM vienen como configuracion vendor.
 
+Tambien agrega `pam_kwallet5.so` en:
+
+- `/etc/pam.d/sddm`
+- `/etc/pam.d/kde`
+
+Esto permite que KDE Wallet se abra solo cuando la contrasena del wallet coincide con la contrasena del usuario y el inicio de sesion pasa por contrasena.
+
 Para instalar sin tocar PAM:
 
 ```bash
 sudo ./scripts/install-cachy.sh --no-pam
+```
+
+Para instalar la huella sin tocar la configuracion de KWallet:
+
+```bash
+sudo ./scripts/install-cachy.sh --no-kwallet
 ```
 
 Para elegir un archivo PAM especifico:
@@ -83,6 +98,21 @@ auth sufficient pam_exec.so quiet /usr/local/bin/futronic-auth verify --pam-user
 
 `sufficient` significa que una huella valida permite continuar sin pedir password. Si no hay plantilla, no coincide la huella o el lector falla, PAM sigue con el metodo normal que ya tenia el sistema.
 
+## KDE Wallet
+
+El instalador agrega este bloque a `sddm` y `kde`:
+
+```text
+# futronic-kwallet begin
+-auth optional pam_kwallet5.so
+-session optional pam_kwallet5.so auto_start
+# futronic-kwallet end
+```
+
+Esto evita tener que escribir otra vez la contrasena de KWallet cuando KDE inicio con la contrasena normal del usuario.
+
+Limitacion importante: si la sesion se abre solamente con huella, PAM no recibe la contrasena real. En ese caso `pam_kwallet5` no tiene el secreto necesario para desbloquear un wallet protegido con esa contrasena, asi que KDE Wallet puede seguir pidiendola. Para que no la pida con login por huella, las opciones practicas son usar un wallet sin contrasena, mantener el login por contrasena para el primer inicio, o aceptar ese prompt como paso separado.
+
 ## Revertir PAM
 
 El instalador crea backups con este formato:
@@ -97,6 +127,15 @@ Tambien puede quitar manualmente este bloque:
 # futronic-fs81 begin
 auth sufficient pam_exec.so quiet /usr/local/bin/futronic-auth verify --pam-user
 # futronic-fs81 end
+```
+
+Y, si agrego KWallet, este bloque:
+
+```text
+# futronic-kwallet begin
+-auth optional pam_kwallet5.so
+-session optional pam_kwallet5.so auto_start
+# futronic-kwallet end
 ```
 
 ## Notas de seguridad
