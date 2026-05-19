@@ -19,6 +19,7 @@ Este proyecto agrega:
 
 - `futronic-auth`: herramienta CLI para enrolar y verificar huellas.
 - Integración PAM para `sddm`, `login` y KDE lockscreen.
+- Apertura automática de KDE Wallet con `pam_kwallet5` cuando el login usa la contraseña normal.
 - `futronic-lockwatch`: servicio de usuario que desbloquea KDE automáticamente al apoyar el dedo.
 - Instalador para CachyOS/Arch.
 
@@ -39,7 +40,7 @@ Debes obtenerlas desde el SDK/demo Linux de Futronic y pasarle la ruta al instal
 git clone https://github.com/juanfostel/ifc.git
 cd ifc/futronic-linux-login
 
-sudo pacman -S --needed base-devel pam libusb-compat
+sudo pacman -S --needed base-devel pam libusb-compat kwallet-pam
 sudo env SDK_DIR=/ruta/al/Linux_gtk_demo_x64 bash ./scripts/install-cachy.sh
 ```
 
@@ -79,6 +80,12 @@ Desactivar:
 systemctl --user disable --now futronic-lockwatch.service
 ```
 
+## KDE Wallet
+
+El instalador agrega `pam_kwallet5.so` a `sddm` y `kde` para abrir KDE Wallet automáticamente cuando la contraseña del wallet coincide con la contraseña del usuario y el inicio de sesión pasa por contraseña.
+
+Limitación: si la sesión se abre solamente con huella, PAM no recibe la contraseña real. En ese caso `pam_kwallet5` no tiene el secreto necesario para desbloquear un wallet protegido con esa contraseña, así que KDE Wallet puede seguir pidiéndola.
+
 ## Seguridad
 
 El binario `futronic-auth` se instala como `setuid root` porque KDE lockscreen corre como usuario normal y necesita acceder al lector y a las plantillas guardadas en `/var/lib/futronic-fs81`.
@@ -97,6 +104,7 @@ El instalador crea backups de PAM con formato similar a:
 
 ```text
 /etc/pam.d/sddm.futronic-backup.YYYYMMDDHHMMSS
+/etc/pam.d/sddm.kwallet-backup.YYYYMMDDHHMMSS
 ```
 
 También puedes desactivar el watcher:
@@ -111,6 +119,10 @@ Y quitar manualmente los bloques marcados:
 # futronic-fs81 begin
 ...
 # futronic-fs81 end
+
+# futronic-kwallet begin
+...
+# futronic-kwallet end
 ```
 
 ## Carpeta principal
